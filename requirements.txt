@@ -2,4 +2,5 @@ PyQt6~=6.9.1
 requests~=2.32.3
 yt-dlp~=2025.1.26
 music-tag~=0.4.3
-soundcloud-v2~=1.6.1
+soundcloud-v2~=1.6.2
+
