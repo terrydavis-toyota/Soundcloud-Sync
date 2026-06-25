@@ -76,45 +76,47 @@ def sync_all(window_object, json_path, sc_object):
 def sync_element(window_object, library_path, sc_object, json_element):
     """ Synchroniser le contenu distant au répertoire local. """
 
+    if json_element[0] in window_object.lien_en_synchro:
+        return
+    window_object.lien_en_synchro.append(json_element[0])
+    window_object.label_status_general.setText("Synchronisation en cours...")
     tracklist = []  # Liste des sons dans le lien soundcloud distant, composée de sous listes [url, titre].
     content = sc_object.resolve(json_element[0])
     ligne_element = utils.trouver_ligne_url(window_object, json_element[0][8:])
+    utils.definir_status_element(window_object, ligne_element,
+                                 f"Démarrage de la synchronisation...", "orange")
     try:
-        if ligne_element not in window_object.synchros_en_cours:
-            window_object.synchros_en_cours.append(ligne_element)
-            if isinstance(content, soundcloud.Track):  # Si c'est un son unique.
-                path = Path(json_element[1].replace("/", os.sep)).parent
-                library_path = Path(f"{library_path}{path}{os.sep}")
-                library_path.parent.mkdir(parents=True, exist_ok=True)
-                tracklist.append([content.permalink_url, content.title])
-            elif isinstance(content, soundcloud.AlbumPlaylist) and content.is_album:  # Si c'est un album.
-                utils.definir_status_element(window_object, ligne_element,
-                                             f"Démarrage de la synchronisation...", "orange")
-                library_path = Path(f"{library_path}{json_element[1].replace('/', os.sep)}")
-                library_path.mkdir(parents=True, exist_ok=True)
-                for track in content.tracks:
-                    tracklist.append([sc_object.get_track(track.id).permalink_url, sc_object.get_track(track.id).title])
-            elif isinstance(content, soundcloud.AlbumPlaylist) and not content.is_album:  # Si c'est une playliste.
-                utils.definir_status_element(window_object, ligne_element,
-                                             f"Démarrage de la synchronisation...", "orange")
-                library_path = Path(f"{library_path}{json_element[1].replace('/', os.sep)}{os.sep}")
-                library_path.mkdir(parents=True, exist_ok=True)
-                for track in content.tracks:
-                    tracklist.append([sc_object.get_track(track.id).permalink_url, sc_object.get_track(track.id).title])
-            elif isinstance(content, soundcloud.User):  # Si c'est un utilisateur soundcloud.
-                utils.definir_status_element(window_object, ligne_element,
-                                             f"Démarrage de la synchronisation...", "orange")
-                library_path = Path(f"{library_path}{json_element[1].replace('/', os.sep)}{os.sep}")
-                library_path.mkdir(parents=True, exist_ok=True)
-                if json_element[0].endswith("likes"):
-                    for track in sc_object.get_user_likes(content.id):
-                        if isinstance(track, soundcloud.TrackLike):
-                            tracklist.append([sc_object.get_track(track.track.id).permalink_url,
-                                              sc_object.get_track(track.track.id).title])
-                else:
-                    for track in sc_object.get_user_tracks(content.id):
-                        tracklist.append([sc_object.get_track(track.id).permalink_url,
-                                          sc_object.get_track(track.id).title])
+        if isinstance(content, soundcloud.Track):  # Si c'est un son unique.
+            path = Path(json_element[1].replace("/", os.sep)).parent
+            library_path = Path(f"{library_path}{os.sep}{path}{os.sep}")
+            library_path.parent.mkdir(parents=True, exist_ok=True)
+            tracklist.append([content.permalink_url, content.title])
+        elif isinstance(content, soundcloud.AlbumPlaylist) and content.is_album:  # Si c'est un album.
+            library_path = Path(f"{library_path}{json_element[1].replace('/', os.sep)}{os.sep}")
+            library_path.mkdir(parents=True, exist_ok=True)
+            for track in content.tracks:
+                resolved_track = sc_object.get_track(track.id)
+                tracklist.append([resolved_track.permalink_url, resolved_track.title])
+        elif isinstance(content, soundcloud.AlbumPlaylist) and not content.is_album:  # Si c'est une playliste.
+            library_path = Path(f"{library_path}{json_element[1].replace('/', os.sep)}{os.sep}")
+            library_path.mkdir(parents=True, exist_ok=True)
+            for track in content.tracks:
+                resolved_track = sc_object.get_track(track.id)
+                tracklist.append([resolved_track.permalink_url, resolved_track.title])
+        elif isinstance(content, soundcloud.User):  # Si c'est un utilisateur soundcloud.
+            library_path = Path(f"{library_path}{json_element[1].replace('/', os.sep)}{os.sep}")
+            library_path.mkdir(parents=True, exist_ok=True)
+            if json_element[0].endswith("likes"):
+                for track in sc_object.get_user_likes(content.id):
+                    if isinstance(track, soundcloud.TrackLike):
+                        resolved_track = sc_object.get_track(track.track.id)
+                        tracklist.append([resolved_track.permalink_url,
+                                          resolved_track.title])
+            else:
+                for track in sc_object.get_user_tracks(content.id):
+                    resolved_track = sc_object.get_track(track.id)
+                    tracklist.append([resolved_track.permalink_url,
+                                      resolved_track.title])
 
         # Lister toutes les musiques deja téléchargées.
         list_musiques_telechargees = []
@@ -130,11 +132,9 @@ def sync_element(window_object, library_path, sc_object, json_element):
                                          f"Synchronisation en cours... ({nb_fichiers}/{len(tracklist)})", "orange")
             if not utils.remplacer_caract_spec(track[1]) in list_musiques_telechargees:  # Si la musique n'est pas deja téléchargée.
                 try:
-                    window_object.label_actualisation.setText("Téléchargement en cours...")
                     # Télécharger le son de la liste tracklist.
                     download_track(window_object, track, str(library_path),
                                   sc_object.auth_token)
-                    window_object.label_actualisation.setText("")
                 except PermissionError as e:
                     pass
 
@@ -146,10 +146,11 @@ def sync_element(window_object, library_path, sc_object, json_element):
                 if file_path.is_file():
                     # Si le nom du fichier n'est pas dans la liste des noms de musiques à synchroniser.
                     if utils.remplacer_caract_spec(file_path.stem) not in tracks_title:
+                        print(f"Suppression de '{file_path.stem}' qui n'existe pas dans la playliste.")
                         try:
                             file_path.unlink()  # Supprimer le fichier local.
                         except PermissionError:
-                            pass
+                            print("Erreur lors de la suppression d'un fichier: Permissions manquantes.")
 
         # Afficher le nombre de fichiers téléchargés et le nombre de fichiers dans la liste soundcloud.
         nb_fichiers = sum(1 for element in library_path.iterdir() if element.is_file())
@@ -161,11 +162,13 @@ def sync_element(window_object, library_path, sc_object, json_element):
         print(f"Erreur: Synchronisation impossible. {e}")
 
     # Supprimer le numéro de ligne de l'élément synchronisé de la liste des éléments en cours de syncro.
-    window_object.synchros_en_cours.remove(ligne_element)
+    window_object.lien_en_synchro.remove(json_element[0])
+    if not window_object.lien_en_synchro:
+        window_object.label_status_general.setText("")
 
 
 def download_track(window_object, track, path, auth_token):
-    """ Télécharge une musique en gardant les métadonnées. """
+    """ Télécharge une musique et ajoute les métadonnées. """
 
     # yt-dlp paramètres.
     ydl_opts = {
@@ -201,5 +204,5 @@ def download_track(window_object, track, path, auth_token):
                 f.append_tag('genre', genre)
         f["artwork"] = requests.get(result["thumbnails"][-1]["url"]).content
         f.save()
-    except:
-        pass
+    except Exception as e:
+        print(f"Erreur lors du téléchargement de {track[1]}: {e}")
