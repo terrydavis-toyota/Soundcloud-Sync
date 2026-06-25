@@ -1,69 +1,75 @@
 # Soundcloud Sync
 
-> **Synchroniser vos playlists, musiques et artistes Soundcloud sur votre PC**
+> **Téléchargez et synchronisez** vos musiques, playlists, albums et artistes SoundCloud **localement** sur votre PC.
 
 ![screen](ressources/screen1.png)
 
 
-## Fonctionnement et options:
+## Fonctionnement et options
 
-**Téléchargez et synchronisez des musiques, playlistes, et d'autres types de listes de sons depuis Soundcloud sur votre PC.**
+- **Téléchargez tous les titres d'une playlist ou d'un autre type de contenu en un clique.**
+- Fichiers téléchargés dans **la meilleure qualité disponible** :
+  - **160 kb/s (OPUS)** avec un compte gratuit.
+  - **258 kb/s (AAC)** avec un compte Premium.
+- Conserve les **métadonnées** : titre, artiste, album, genre, artwork (pochette), date de sortie.
+- Synchronise les contenus :
+  - Les **nouveaux titres** ajoutés à une playlist/album sont téléchargés.
+  - Les **titres supprimés** des playlists peuvent être **supprimés localement** (option activée par défaut, modifiable dans les paramètres).
+- Prend en charge la **conversion en MP3** (nécessite `ffmpeg`).
 
-Les fichiers audio sont téléchargés avec la meilleur qualité audio disponible:
-160kb/s avec un compte gratuit, 258kb/s avec SoundCloud premium.
-Les métadonnées tels que l'artiste, le genre, et l'artwork sont conservés.
-
-En synchronisant un élément, les titres manquants seront téléchargés.
-
-Si le paramètre n'est pas désactivé, les titres téléchargés qui ne sont plus dans la playlist/album soundcloud seront supprimés.
-D'autres paramètres sont disponibles pour par exemple convertir les fichiers en MP3.
-
-### Les éléments soundcloud acceptés avec exemples de lien:
-- **Une musique:**
-`https://soundcloud.com/nerz303/les-free-party`
-- **Une playliste:**
-`https://soundcloud.com/kurtdklg/sets/tribe`
-- **Un album:**
-`https://soundcloud.com/saphirelefleur/sets/houellebecq-soumission`
-- **Un artiste:**
-`https://soundcloud.com/bertha_official`
-- **Les titres aimés par un utilisateur:**
-`https://soundcloud.com/matekasm/likes` 
+### Types de contenus pris en charge
+- **Musique** : `https://soundcloud.com/nerz303/les-free-party`
+- **Playlist** : `https://soundcloud.com/kurtdklg/sets/tribe`
+- **Album** : `https://soundcloud.com/saphirelefleur/sets/houellebecq-soumission`
+- **Artiste** : `https://soundcloud.com/bertha_official`
+- **Titres aimés** : `https://soundcloud.com/matekasm/likes`
 
 
-## Installation:
+## Installation
 
-Vous avez besoin de `Python 3.9` minimum et de `ffmpeg`.
+Vous avez besoin de `Python 3.9` minimum: https://www.python.org/downloads/
 
-Pour installer `ffmpeg` sur Windows, utilisez cette commande: `winget ffmpeg`
+FFMPEG est aussi requis.
+
+Avec Windows, le plus simple est d'utiliser WINGET (https://aka.ms/getwinget): Dans le terminal, entrez
+
+    winget install ffmpeg
+
+Sur macOS: `brew install ffmpeg`.
+
 Sur Linux, utilisez votre gestionnaire de paquet.
 
-Pour installer les dépendances, entrez cette commande dans le répertoire du projet.
+Pour installer les dépendances Python, entrez cette commande dans le terminal depuis le répertoire du projet:
 
     python -m pip install -r requirements.txt
 
 Pour lancer le programme:
 
-    python "soundcloud sync.py"
+    python "SoundCloud sync.py"
 
 
-## Paramètres:
+## Paramètres
+
+*Vous pouvez modifier ces paramètres en ouvrant la fenêtre de configuration depuis l'onglet Actions.*
 
 ![screen](ressources/screen2.png)
 
 #### Token Soundcloud
-Vous devez entrer votre Token d'authentification Soundcloud pour pouvoir télécharger les musiques:
-Vous trouverez votre token dans les cookies Soundcloud
-(Connectez-vous à soundcloud.com > appuyez sur F12 > onglet Application > cookies > Value de `oauth_token`).
+Ne partagez jamais votre Token à quiconque. Il permet de se connecter à votre compte.
 
+Pour l'obtenir:
+1. Connectez-vous à soundcloud.com
+2. Ouvrez les outils de développement (F12 ou Ctrl+Shift+I)
+3. Allez dans l’onglet Application > Cookies
+4. Copiez la valeur du cookie oauth_token
 
 #### Répertoire de synchronisation
 Vous devez spécifier le chemin du répertoire dans lequel seront téléchargées les musiques.
 Choisissez un dossier vide, par exemple `Musiques/Soundcloud/`
-Chaque répertoir est indépendant et contient un fichier JSON avec tous les liens soundcloud ajoutés.
+Chaque répertoir est indépendant et contient un fichier JSON avec tous les liens SoundCloud ajoutés.
 
 
-## Notes:
+## Notes
 
 Si l'installation des dépendances du requirements.txt échoue avec une version récente de Python, essayez d'utiliser `Python 3.9`.
 
