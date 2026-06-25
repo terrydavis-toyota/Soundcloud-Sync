@@ -70,7 +70,7 @@ class ConfigApp(QtWidgets.QWidget):
         layout_principal.addLayout(layout_input2_vertical)
 
         aide_label = QtWidgets.QLabel(
-            "<a href='https://github.com/Robin-mlh/Soundcloud-Sync/tree/main?tab=readme-ov-file#param%C3%A8tres'>Cliquez ici si vous avez besoin d'aide</a>")
+            "<a href='https://github.com/terrydavis-toyota/Soundcloud-Sync/tree/main?tab=readme-ov-file#param%C3%A8tres'>Cliquez ici si vous avez besoin d'aide</a>")
         aide_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         aide_label.setTextFormat(QtCore.Qt.TextFormat.RichText)
         aide_label.setTextInteractionFlags(QtCore.Qt.TextInteractionFlag.TextBrowserInteraction)
